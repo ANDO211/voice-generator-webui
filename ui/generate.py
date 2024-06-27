@@ -36,13 +36,13 @@ def vc_change(vcid):
         hubert_model = vc_interface.load_hubert()
         vc, net_g = vc_interface.get_vc(vcid)
 
-
+#ここに音声を
 def text2speech(lang, text, sid, vcid, pitch, f0method, length_scale):
     phonemes, tts_audio = tts_interface.generate_speech(model, lang, text, speaker_list.index(sid), False, length_scale)
     if vcid != 'No conversion':
         return phonemes, vc_interface.convert_voice(hubert_model, vc, net_g, tts_audio, vcid, pitch, f0method)
 
-    return phonemes, tts_audio
+    return phonemes, tts_audio　# 発音と音声を出力する関数
 
 
 def acc2speech(lang, text, sid, vcid, pitch, f0method, length_scale):
