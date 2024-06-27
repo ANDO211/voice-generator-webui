@@ -106,7 +106,7 @@ def ui():
                     fn=save_preset,
                     inputs=[preset_name, lang_dropdown, sid, vcid, pitch, f0method, speed],
                 )
-
+# valueが最終的な値？ f0method→harvest、pitch→0、speed→1、vcid→Noconversion、
         with gr.Row():
             output_audio = gr.Audio(label="Output Audio", type='numpy')
             text2speech_bt.click(
