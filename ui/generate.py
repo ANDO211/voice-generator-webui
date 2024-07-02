@@ -52,6 +52,43 @@ def acc2speech(lang, text, sid, vcid, pitch, f0method, length_scale):
 
     return tts_audio
 
+###########################################################################################################################################################################
+#母音変換ルール
+def swap_chars(phonemes):
+    result = ''
+    for char in phonemes:
+        if char == 'i':
+            result += 'u'
+        elif char == 'u':
+            result += 'i'
+        elif char == 'e':
+            result += 'o'
+        elif char == 'o':
+            result += 'e'
+        else:
+            result += char
+    return result
+
+#アクセントを抽出
+def accentgenerate(lang, text, sid, vcid, pitch, f0method, length_scale):
+    phonemes, tts_audio = tts_interface.generate_speech(model, lang, text, speaker_list.index(sid), False, length_scale)
+    if vcid != 'No conversion':
+        return phonemes, vc_interface.convert_voice(hubert_model, vc, net_g, tts_audio, vcid, pitch, f0method)
+
+    return phonemes
+
+#アクセントから音声を生成
+def accent2speech(lang, text, sid, vcid, pitch, f0method, length_scale):
+    _, tts_audio = tts_interface.generate_speech(model, lang, text, speaker_list.index(sid), True, length_scale)
+    if vcid != 'No conversion':
+        return vc_interface.convert_voice(hubert_model, vc, net_g, tts_audio, vcid, pitch, f0method)
+
+    return tts_audio
+
+def boinhenkan(lang, text, sid, vcid, pitch, f0method, length_scale):
+    
+
+###########################################################################################################################################################################
 
 def save_preset(preset_name, lang_dropdown, sid, vcid, pitch, f0method, speed):
     path = 'ui/speaker_presets.json'
@@ -114,7 +151,7 @@ def ui():
                 inputs=[lang_dropdown, text, sid, vcid, pitch, f0method, speed],
                 outputs=[phonemes, output_audio]
             )
-            acc2speech_bt.click(
+            acc2speech_bt.click(#アクセントから
                 fn=acc2speech,
                 inputs=[lang_dropdown, phonemes, sid, vcid, pitch, f0method, speed],
                 outputs=[output_audio]
