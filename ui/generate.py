@@ -71,22 +71,20 @@ def swap_chars(phonemes):
 
 #アクセントを抽出
 def accentgenerate(lang, text, sid, vcid, pitch, f0method, length_scale):
-    phonemes, tts_audio = tts_interface.generate_speech(model, lang, text, speaker_list.index(sid), False, length_scale)
-    if vcid != 'No conversion':
-        return phonemes, vc_interface.convert_voice(hubert_model, vc, net_g, tts_audio, vcid, pitch, f0method)
-
+    phonemes = tts_interface.generate_speech(model, lang, text, speaker_list.index(sid), False, length_scale)
     return phonemes
 
 #アクセントから音声を生成
 def accent2speech(lang, text, sid, vcid, pitch, f0method, length_scale):
     _, tts_audio = tts_interface.generate_speech(model, lang, text, speaker_list.index(sid), True, length_scale)
-    if vcid != 'No conversion':
-        return vc_interface.convert_voice(hubert_model, vc, net_g, tts_audio, vcid, pitch, f0method)
-
     return tts_audio
 
 def boinhenkan(lang, text, sid, vcid, pitch, f0method, length_scale):
-    accentgenerate(lang, text, sid, vcid, pitch, f0method, length_scale)
+    phonemes = accentgenerate(lang, text, sid, vcid, pitch, f0method, length_scale)
+    henkan_phonemes = swap_chars(phonemes)
+    tts_audio = accent2speech(lang, henkan_phonemes, sid, vcid, pitch, f0method, length_scale)
+    return tts_audio
+    
     
 
 ###########################################################################################################################################################################
@@ -147,10 +145,10 @@ def ui():
 # valueが最終的な値？ f0method→harvest、pitch→0、speed→1、vcid→Noconversion、
         with gr.Row():
             output_audio = gr.Audio(label="Output Audio", type='numpy')
-            text2speech_bt.click(
+            boinhenkan_bt.click(
                 fn=text2speech,
                 inputs=[lang_dropdown, text, sid, vcid, pitch, f0method, speed],
-                outputs=[phonemes, output_audio]
+                outputs=[output_audio]
             )
             acc2speech_bt.click(#アクセントから
                 fn=acc2speech,
