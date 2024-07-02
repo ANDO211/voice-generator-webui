@@ -38,18 +38,17 @@ def vc_change(vcid):
 
 #ここに音声を
 def text2speech(lang, text, sid, vcid, pitch, f0method, length_scale):
-    phonemes = tts_interface.generate_speech(model, lang, text, speaker_list.index(sid), False, length_scale)
+    phonemes, tts_audio = tts_interface.generate_speech(model, lang, text, speaker_list.index(sid), False, length_scale)
     if vcid != 'No conversion':
         return phonemes, vc_interface.convert_voice(hubert_model, vc, net_g, tts_audio, vcid, pitch, f0method)
-
-    return phonemes, tts_audio　# 発音と音声を出力する関数
+    phonemes2 = swap_chars(phonemes)
+    return phonemes2, tts_audio# 発音と音声を出力する関数
 
 
 def acc2speech(lang, text, sid, vcid, pitch, f0method, length_scale):
     _, tts_audio = tts_interface.generate_speech(model, lang, text, speaker_list.index(sid), True, length_scale)
     if vcid != 'No conversion':
         return vc_interface.convert_voice(hubert_model, vc, net_g, tts_audio, vcid, pitch, f0method)
-
     return tts_audio
 
 ###########################################################################################################################################################################
@@ -71,7 +70,7 @@ def swap_chars(phonemes):
 
 #アクセントを抽出
 def accentgenerate(lang, text, sid, vcid, pitch, f0method, length_scale):
-    phonemes = tts_interface.generate_speech(model, lang, text, speaker_list.index(sid), False, length_scale)
+    phonemes, tts_audio = tts_interface.generate_speech(model, lang, text, speaker_list.index(sid), False, length_scale)
     return phonemes
 
 #アクセントから音声を生成
@@ -82,8 +81,8 @@ def accent2speech(lang, text, sid, vcid, pitch, f0method, length_scale):
 def boinhenkan(lang, text, sid, vcid, pitch, f0method, length_scale):
     phonemes = accentgenerate(lang, text, sid, vcid, pitch, f0method, length_scale)
     henkan_phonemes = swap_chars(phonemes)
-    tts_audio = accent2speech(lang, henkan_phonemes, sid, vcid, pitch, f0method, length_scale)
-    return tts_audio
+    tts_audio1 = accent2speech(lang, henkan_phonemes, sid, vcid, pitch, f0method, length_scale)
+    return henkan_phonemes, tts_audio1
     
     
 
@@ -112,7 +111,7 @@ def ui():
         with gr.Row():
             with gr.Column(scale=2):
                 text = gr.Textbox(label="Text", value="こんにちは、世界", lines=8)
-                text2speech_bt = gr.Button("Generate From Text", variant="primary")
+                boinhenkan_bt = gr.Button("Generate From Text", variant="primary")
 
                 phonemes = gr.Textbox(label="Phones", interactive=True, lines=8)
                 acc2speech_bt = gr.Button("Generate From Phones", variant="primary")
@@ -146,9 +145,9 @@ def ui():
         with gr.Row():
             output_audio = gr.Audio(label="Output Audio", type='numpy')
             boinhenkan_bt.click(
-                fn=text2speech,
+                fn=boinhenkan,
                 inputs=[lang_dropdown, text, sid, vcid, pitch, f0method, speed],
-                outputs=[output_audio]
+                outputs=[phonemes, output_audio]
             )
             acc2speech_bt.click(#アクセントから
                 fn=acc2speech,
