@@ -38,7 +38,7 @@ def vc_change(vcid):
 
 #ここに音声を
 def text2speech(lang, text, sid, vcid, pitch, f0method, length_scale):
-    phonemes, tts_audio = tts_interface.generate_speech(model, lang, text, speaker_list.index(sid), False, length_scale)
+    phonemes = tts_interface.generate_speech(model, lang, text, speaker_list.index(sid), False, length_scale)
     if vcid != 'No conversion':
         return phonemes, vc_interface.convert_voice(hubert_model, vc, net_g, tts_audio, vcid, pitch, f0method)
 
@@ -86,6 +86,7 @@ def accent2speech(lang, text, sid, vcid, pitch, f0method, length_scale):
     return tts_audio
 
 def boinhenkan(lang, text, sid, vcid, pitch, f0method, length_scale):
+    accentgenerate(lang, text, sid, vcid, pitch, f0method, length_scale)
     
 
 ###########################################################################################################################################################################
