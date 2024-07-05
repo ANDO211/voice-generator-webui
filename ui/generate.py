@@ -1,9 +1,19 @@
+###########################################################################################################################################################################
+#VG-webui用
 import gradio as gr
 from vc import vc_interface
 from tts import tts_interface
 from scripts import download
 import os
 import json
+###########################################################################################################################################################################
+#whisper用
+from google.colab import output
+from base64 import b64decode
+from IPython.display import Javascript
+import whisper
+###########################################################################################################################################################################
+
 
 # load vits model names
 with open('tts/models/model_list.json', 'r', encoding="utf-8") as file:
@@ -87,6 +97,51 @@ def boinhenkan(lang, text, sid, vcid, pitch, f0method, length_scale):
     
 
 ###########################################################################################################################################################################
+#文字お越し
+
+# 録音を行う関数
+def record_audio(sec, filename='audio.wav'):
+    display(Javascript(RECORD))
+    s = output.eval_js('record(%d)' % (sec * 1000))
+    b = b64decode(s.split(',')[1])
+    with open(filename, 'wb+') as f:
+        f.write(b)
+
+# Whisperで文字起こしを行う関数
+def transcribe_audio(filename, language='ja'):
+    model = whisper.load_model("base")
+    result = model.transcribe(filename, verbose=False, language=language)
+    return result["text"]
+
+# 録音と文字起こしを統合する関数
+def record_and_transcribe(sec, filename='audio.wav', language='ja'):
+    print(f"Speak to your microphone for {sec} seconds...")
+    record_audio(sec, filename)
+    print("Recording complete!")
+    text = transcribe_audio(filename, language)
+    print("Transcription complete!")
+    return text
+
+# 使用例
+second = 5
+audiofile = "audio.wav"
+transcribed_text = record_and_transcribe(second, audiofile, language='ja')
+print("Transcribed text:", transcribed_text)
+###########################################################################################################################################################################
+def boinhenkan2(lang, text, sid, vcid, pitch, f0method, length_scale):
+    text= record_and_transcribe(second, audiofile, language='ja')
+    phonemes = accentgenerate(lang, text, sid, vcid, pitch, f0method, length_scale)
+    henkan_phonemes = swap_chars(phonemes)
+    tts_audio1 = accent2speech(lang, henkan_phonemes, sid, vcid, pitch, f0method, length_scale)
+    return henkan_phonemes, tts_audio1
+
+
+
+
+
+###########################################################################################################################################################################
+
+
 
 def save_preset(preset_name, lang_dropdown, sid, vcid, pitch, f0method, speed):
     path = 'ui/speaker_presets.json'
