@@ -128,16 +128,13 @@ audiofile = "audio.wav"
 transcribed_text = record_and_transcribe(second, audiofile, language='ja')
 print("Transcribed text:", transcribed_text)
 ###########################################################################################################################################################################
+最終コード
 def boinhenkan2(lang, text, sid, vcid, pitch, f0method, length_scale):
     text= record_and_transcribe(second, audiofile, language='ja')
     phonemes = accentgenerate(lang, text, sid, vcid, pitch, f0method, length_scale)
     henkan_phonemes = swap_chars(phonemes)
     tts_audio1 = accent2speech(lang, henkan_phonemes, sid, vcid, pitch, f0method, length_scale)
     return henkan_phonemes, tts_audio1
-
-
-
-
 
 ###########################################################################################################################################################################
 
@@ -166,7 +163,7 @@ def ui():
         with gr.Row():
             with gr.Column(scale=2):
                 text = gr.Textbox(label="Text", value="こんにちは、世界", lines=8)
-                boinhenkan_bt = gr.Button("Generate From Text", variant="primary")
+                boinhenkan2_bt = gr.Button("Generate From Text", variant="primary")
 
                 phonemes = gr.Textbox(label="Phones", interactive=True, lines=8)
                 acc2speech_bt = gr.Button("Generate From Phones", variant="primary")
@@ -199,8 +196,8 @@ def ui():
 # valueが最終的な値？ f0method→harvest、pitch→0、speed→1、vcid→Noconversion、
         with gr.Row():
             output_audio = gr.Audio(label="Output Audio", type='numpy')
-            boinhenkan_bt.click(
-                fn=boinhenkan,
+            boinhenkan2_bt.click(
+                fn=boinhenkan2,
                 inputs=[lang_dropdown, text, sid, vcid, pitch, f0method, speed],
                 outputs=[phonemes, output_audio]
             )
