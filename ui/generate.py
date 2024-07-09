@@ -89,6 +89,8 @@ def accent2speech(lang, text, sid, vcid, pitch, f0method, length_scale):
     return tts_audio
 
 def boinhenkan(lang, text, sid, vcid, pitch, f0method, length_scale):
+    input_audio = gr.Audio(source="microphone", type="filepath", label="録音開始")
+    text = transcribe_audio(input_audio)
     phonemes = accentgenerate(lang, text, sid, vcid, pitch, f0method, length_scale)
     henkan_phonemes = swap_chars(phonemes)
     tts_audio1 = accent2speech(lang, henkan_phonemes, sid, vcid, pitch, f0method, length_scale)
@@ -97,11 +99,8 @@ def boinhenkan(lang, text, sid, vcid, pitch, f0method, length_scale):
     
 
 ###########################################################################################################################################################################
-# 文字お越し
-# Whisperモデルをロード
 model = whisper.load_model("base")
 
-# 録音した音声を保存し、文字起こしする関数を定義
 def transcribe_audio(filepath):
     try:
         # 保存するディレクトリを指定
@@ -122,12 +121,9 @@ def transcribe_audio(filepath):
     except Exception as e:
         return str(e)
 
-
-
 ###########################################################################################################################################################################
-最終コード
+#最終コード
 def boinhenkan2(lang, text, sid, vcid, pitch, f0method, length_scale):
-    text= record_and_transcribe(second, audiofile, language='ja')
     phonemes = accentgenerate(lang, text, sid, vcid, pitch, f0method, length_scale)
     henkan_phonemes = swap_chars(phonemes)
     tts_audio1 = accent2speech(lang, henkan_phonemes, sid, vcid, pitch, f0method, length_scale)
@@ -158,7 +154,11 @@ def save_preset(preset_name, lang_dropdown, sid, vcid, pitch, f0method, speed):
 def ui():
     with gr.TabItem('Generate'):
         with gr.Row():
-            with gr.Column(scale=2):
+            with gr.Column(scale=3):
+                input_audio = gr.Audio(source="microphone", type="filepath", label="録音開始")
+                text2 = gr.Textbox(label="Text", value="こんにちは、世界", lines=8)
+                transcribe_audio_bt = gr.Button("Generate From Text", variant="primary")
+                
                 text = gr.Textbox(label="Text", value="こんにちは、世界", lines=8)
                 boinhenkan2_bt = gr.Button("Generate From Text", variant="primary")
 
@@ -192,13 +192,14 @@ def ui():
                 )
 # valueが最終的な値？ f0method→harvest、pitch→0、speed→1、vcid→Noconversion、
         with gr.Row():
-            # Gradioインターフェースを作成
-            iface = gr.Interface(
-                fn=transcribe_audio,  # 処理関数を指定
-                inputs=gr.Audio(type="filepath"),  # マイクを音声入力ソースとして指定
-                outputs="text"  # 出力形式をテキストに指定
-            )
             output_audio = gr.Audio(label="Output Audio", type='numpy')
+
+            transcribe_audio_bt.click(
+                fn=transcribe_audio,  # 処理関数を指定
+                inputs=input_audio,  # マイクを音声入力ソースとして指定
+                outputs=text2  # 出力形式をテキストに指定
+            )
+
             boinhenkan2_bt.click(
                 fn=boinhenkan2,
                 inputs=[lang_dropdown, text, sid, vcid, pitch, f0method, speed],
