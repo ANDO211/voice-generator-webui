@@ -7,11 +7,11 @@ from scripts import download
 import os
 import json
 ###########################################################################################################################################################################
-#whisper用
-from google.colab import output
-from base64 import b64decode
-from IPython.display import Javascript
+#Whisper用
+import gradio as gr
 import whisper
+import os
+import shutil
 ###########################################################################################################################################################################
 
 
@@ -97,36 +97,33 @@ def boinhenkan(lang, text, sid, vcid, pitch, f0method, length_scale):
     
 
 ###########################################################################################################################################################################
-#文字お越し
+# 文字お越し
+# Whisperモデルをロード
+model = whisper.load_model("base")
 
-# 録音を行う関数
-def record_audio(sec, filename='audio.wav'):
-    display(Javascript(RECORD))
-    s = output.eval_js('record(%d)' % (sec * 1000))
-    b = b64decode(s.split(',')[1])
-    with open(filename, 'wb+') as f:
-        f.write(b)
+# 録音した音声を保存し、文字起こしする関数を定義
+def transcribe_audio(filepath):
+    try:
+        # 保存するディレクトリを指定
+        save_dir = "recordings"
+        os.makedirs(save_dir, exist_ok=True)
 
-# Whisperで文字起こしを行う関数
-def transcribe_audio(filename, language='ja'):
-    model = whisper.load_model("base")
-    result = model.transcribe(filename, verbose=False, language=language)
-    return result["text"]
+        # 保存するファイルのパスを決定
+        save_path = os.path.join(save_dir, "recorded_audio.wav")
 
-# 録音と文字起こしを統合する関数
-def record_and_transcribe(sec, filename='audio.wav', language='ja'):
-    print(f"Speak to your microphone for {sec} seconds...")
-    record_audio(sec, filename)
-    print("Recording complete!")
-    text = transcribe_audio(filename, language)
-    print("Transcription complete!")
-    return text
+        # 音声ファイルを保存
+        shutil.copy(filepath, save_path)
 
-# 使用例
-second = 5
-audiofile = "audio.wav"
-transcribed_text = record_and_transcribe(second, audiofile, language='ja')
-print("Transcribed text:", transcribed_text)
+        # Whisperで文字起こし
+        result = model.transcribe(save_path, language='ja')
+
+        # 結果のテキストを返す
+        return result["text"]
+    except Exception as e:
+        return str(e)
+
+
+
 ###########################################################################################################################################################################
 最終コード
 def boinhenkan2(lang, text, sid, vcid, pitch, f0method, length_scale):
@@ -195,6 +192,12 @@ def ui():
                 )
 # valueが最終的な値？ f0method→harvest、pitch→0、speed→1、vcid→Noconversion、
         with gr.Row():
+            # Gradioインターフェースを作成
+            iface = gr.Interface(
+                fn=transcribe_audio,  # 処理関数を指定
+                inputs=gr.Audio(type="filepath"),  # マイクを音声入力ソースとして指定
+                outputs="text"  # 出力形式をテキストに指定
+            )
             output_audio = gr.Audio(label="Output Audio", type='numpy')
             boinhenkan2_bt.click(
                 fn=boinhenkan2,
