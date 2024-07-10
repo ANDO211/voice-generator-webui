@@ -122,7 +122,7 @@ def transcribe_audio(filepath):
         return str(e)
 
 ###########################################################################################################################################################################
-#最終コード
+#母音変換のみ最終コード
 def boinhenkan2(lang, text, sid, vcid, pitch, f0method, length_scale):
     phonemes = accentgenerate(lang, text, sid, vcid, pitch, f0method, length_scale)
     henkan_phonemes = swap_chars(phonemes)
@@ -130,8 +130,43 @@ def boinhenkan2(lang, text, sid, vcid, pitch, f0method, length_scale):
     return henkan_phonemes, tts_audio1
 
 ###########################################################################################################################################################################
+#母音変換+文字起こし最終コード
+def boinhenkan2(lang, text, sid, vcid, pitch, f0method, length_scale):
+    phonemes = accentgenerate(lang, text, sid, vcid, pitch, f0method, length_scale)
+    henkan_phonemes = swap_chars(phonemes)
+    tts_audio1 = accent2speech(lang, henkan_phonemes, sid, vcid, pitch, f0method, length_scale)
+    return henkan_phonemes, tts_audio1
+
+def transcribe_audio(filepath):
+    try:
+        # 保存するディレクトリを指定
+        save_dir = "recordings"
+        os.makedirs(save_dir, exist_ok=True)
+
+        # 保存するファイルのパスを決定
+        save_path = os.path.join(save_dir, "recorded_audio.wav")
+
+        # 音声ファイルを保存
+        shutil.copy(filepath, save_path)
+
+        # Whisperで文字起こし
+        result = model.transcribe(save_path, language='ja')
+
+        # 結果のテキストを返す
+        return result["text"]
+    except Exception as e:
+        return str(e)
+
+def boinhenkan3(lang, filepath, sid, vcid, pitch, f0method, length_scale):
+    text = transcribe_audio(filepath)
+    phonemes = accentgenerate(lang, text, sid, vcid, pitch, f0method, length_scale)
+    henkan_phonemes = swap_chars(phonemes)
+    tts_audio1 = accent2speech(lang, henkan_phonemes, sid, vcid, pitch, f0method, length_scale)
+    return henkan_phonemes, tts_audio1
 
 
+
+###########################################################################################################################################################################
 
 def save_preset(preset_name, lang_dropdown, sid, vcid, pitch, f0method, speed):
     path = 'ui/speaker_presets.json'
@@ -156,8 +191,7 @@ def ui():
         with gr.Row():
             with gr.Column(scale=3):
                 input_audio = gr.Audio(source="microphone", type="filepath", label="録音開始")
-                text2 = gr.Textbox(label="Text", value="こんにちは、世界", lines=8)
-                transcribe_audio_bt = gr.Button("Generate From Text", variant="primary")
+                boinhenkan3_bt = gr.Button("Generate", variant="primary")
                 
                 text = gr.Textbox(label="Text", value="こんにちは、世界", lines=8)
                 boinhenkan2_bt = gr.Button("Generate From Text", variant="primary")
@@ -193,7 +227,12 @@ def ui():
 # valueが最終的な値？ f0method→harvest、pitch→0、speed→1、vcid→Noconversion、
         with gr.Row():
             output_audio = gr.Audio(label="Output Audio", type='numpy')
-
+            boinhenkan3_bt.click(
+                fn=boinhenkan2,
+                inputs=input_audio,
+                outputs=[phonemes, output_audio]
+            )
+            
             transcribe_audio_bt.click(
                 fn=transcribe_audio,  # 処理関数を指定
                 inputs=input_audio,  # マイクを音声入力ソースとして指定
