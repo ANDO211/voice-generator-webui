@@ -1,5 +1,5 @@
 ###########################################################################################################################################################################
-#VG-webui用
+# VG-webui用
 import gradio as gr
 from vc import vc_interface
 from tts import tts_interface
@@ -7,26 +7,21 @@ from scripts import download
 import os
 import json
 ###########################################################################################################################################################################
-#Whisper用
-import gradio as gr
+# Whisper用
 import whisper
-import os
 import shutil
 ###########################################################################################################################################################################
-
 
 # load vits model names
 with open('tts/models/model_list.json', 'r', encoding="utf-8") as file:
     global lang_dic
     lang_dic = json.load(file)
 
-
 vc_models = ['No conversion']
 # load rvc model names
 os.makedirs('vc/models', exist_ok=True)
 vc_model_root = 'vc/models'
 vc_models.extend([d for d in os.listdir(vc_model_root) if os.path.isdir(os.path.join(vc_model_root, d))])
-
 
 def lang_change(lang):
     global model
@@ -38,7 +33,6 @@ def lang_change(lang):
 
     model = tts_interface.load_model(lang_dic[lang])
     return gr.Dropdown.update(choices=speaker_list)
-
 
 def vc_change(vcid):
     if vcid != 'No conversion':
@@ -54,7 +48,6 @@ def text2speech(lang, text, sid, vcid, pitch, f0method, length_scale):
     phonemes2 = swap_chars(phonemes)
     return phonemes2, tts_audio# 発音と音声を出力する関数
 
-
 def acc2speech(lang, text, sid, vcid, pitch, f0method, length_scale):
     _, tts_audio = tts_interface.generate_speech(model, lang, text, speaker_list.index(sid), True, length_scale)
     if vcid != 'No conversion':
@@ -62,7 +55,7 @@ def acc2speech(lang, text, sid, vcid, pitch, f0method, length_scale):
     return tts_audio
 
 ###########################################################################################################################################################################
-#母音変換ルール
+# 母音変換ルール
 def swap_chars(phonemes):
     result = ''
     for char in phonemes:
@@ -78,12 +71,12 @@ def swap_chars(phonemes):
             result += char
     return result
 
-#アクセントを抽出
+# アクセントを抽出
 def accentgenerate(lang, text, sid, vcid, pitch, f0method, length_scale):
     phonemes, tts_audio = tts_interface.generate_speech(model, lang, text, speaker_list.index(sid), False, length_scale)
     return phonemes
 
-#アクセントから音声を生成
+# アクセントから音声を生成
 def accent2speech(lang, text, sid, vcid, pitch, f0method, length_scale):
     _, tts_audio = tts_interface.generate_speech(model, lang, text, speaker_list.index(sid), True, length_scale)
     return tts_audio
@@ -95,11 +88,10 @@ def boinhenkan(lang, text, sid, vcid, pitch, f0method, length_scale):
     henkan_phonemes = swap_chars(phonemes)
     tts_audio1 = accent2speech(lang, henkan_phonemes, sid, vcid, pitch, f0method, length_scale)
     return henkan_phonemes, tts_audio1
-    
-    
 
 ###########################################################################################################################################################################
-model = whisper.load_model("base")
+# Whisperモデルのロード
+whisper_model = whisper.load_model("base")
 
 def transcribe_audio(filepath):
     try:
@@ -114,7 +106,7 @@ def transcribe_audio(filepath):
         shutil.copy(filepath, save_path)
 
         # Whisperで文字起こし
-        result = model.transcribe(save_path, language='ja')
+        result = whisper_model.transcribe(save_path, language='ja')
 
         # 結果のテキストを返す
         return result["text"]
@@ -122,7 +114,7 @@ def transcribe_audio(filepath):
         return str(e)
 
 ###########################################################################################################################################################################
-#母音変換のみ最終コード
+# 母音変換のみ最終コード
 def boinhenkan2(lang, text, sid, vcid, pitch, f0method, length_scale):
     phonemes = accentgenerate(lang, text, sid, vcid, pitch, f0method, length_scale)
     henkan_phonemes = swap_chars(phonemes)
@@ -130,41 +122,13 @@ def boinhenkan2(lang, text, sid, vcid, pitch, f0method, length_scale):
     return henkan_phonemes, tts_audio1
 
 ###########################################################################################################################################################################
-#母音変換+文字起こし最終コード
-def boinhenkan2(lang, text, sid, vcid, pitch, f0method, length_scale):
-    phonemes = accentgenerate(lang, text, sid, vcid, pitch, f0method, length_scale)
-    henkan_phonemes = swap_chars(phonemes)
-    tts_audio1 = accent2speech(lang, henkan_phonemes, sid, vcid, pitch, f0method, length_scale)
-    return henkan_phonemes, tts_audio1
-
-def transcribe_audio(filepath):
-    try:
-        # 保存するディレクトリを指定
-        save_dir = "recordings"
-        os.makedirs(save_dir, exist_ok=True)
-
-        # 保存するファイルのパスを決定
-        save_path = os.path.join(save_dir, "recorded_audio.wav")
-
-        # 音声ファイルを保存
-        shutil.copy(filepath, save_path)
-
-        # Whisperで文字起こし
-        result = model.transcribe(save_path, language='ja')
-
-        # 結果のテキストを返す
-        return result["text"]
-    except Exception as e:
-        return str(e)
-
+# 母音変換+文字起こし最終コード
 def boinhenkan3(lang, filepath, sid, vcid, pitch, f0method, length_scale):
     text = transcribe_audio(filepath)
     phonemes = accentgenerate(lang, text, sid, vcid, pitch, f0method, length_scale)
     henkan_phonemes = swap_chars(phonemes)
     tts_audio1 = accent2speech(lang, henkan_phonemes, sid, vcid, pitch, f0method, length_scale)
-    return henkan_phonemes, tts_audio1
-
-
+    return text, henkan_phonemes, tts_audio1
 
 ###########################################################################################################################################################################
 
@@ -185,7 +149,6 @@ def save_preset(preset_name, lang_dropdown, sid, vcid, pitch, f0method, speed):
     with open(path, "w", encoding="utf-8") as file:
         json.dump(data, file, indent=2, ensure_ascii=False)
 
-
 def ui():
     with gr.TabItem('Generate'):
         with gr.Row():
@@ -200,8 +163,8 @@ def ui():
                 acc2speech_bt = gr.Button("Generate From Phones", variant="primary")
 
             with gr.Column():
-                lang_dropdown = gr.inputs.Dropdown(choices=list(lang_dic.keys()), label="Languages",)
-                sid = gr.inputs.Dropdown(choices=[], label="Speaker")
+                lang_dropdown = gr.Dropdown(choices=list(lang_dic.keys()), label="Languages")
+                sid = gr.Dropdown(choices=[], label="Speaker")
                 lang_dropdown.change(
                     fn=lang_change,
                     inputs=[lang_dropdown],
@@ -209,14 +172,14 @@ def ui():
                 )
                 speed = gr.Slider(minimum=0.1, maximum=2, step=0.1, label='Speed', value=1)
 
-                vcid = gr.inputs.Dropdown(choices=vc_models, label="Voice Conversion", default='No conversion')
+                vcid = gr.Dropdown(choices=vc_models, label="Voice Conversion", value='No conversion')
                 vcid.change(
                     fn=vc_change,
                     inputs=[vcid]
                 )
                 with gr.Accordion("VC Setteings", open=False):
                     pitch = gr.Slider(minimum=-12, maximum=12, step=1, label='Pitch', value=0)
-                    f0method = gr.Radio(label="Pitch Method pm: speed-oriented, harvest: accuracy-oriented", choices=["pm", "harvest"], value="pm")
+                    f0method = gr.Radio(label="Pitch Method", choices=["pm", "harvest"], value="pm")
 
                 preset_name = gr.Textbox(label="Preset Name", interactive=True)
                 save_preset_bt = gr.Button("Save Preset")
@@ -224,27 +187,19 @@ def ui():
                     fn=save_preset,
                     inputs=[preset_name, lang_dropdown, sid, vcid, pitch, f0method, speed],
                 )
-# valueが最終的な値？ f0method→harvest、pitch→0、speed→1、vcid→Noconversion、
         with gr.Row():
             output_audio = gr.Audio(label="Output Audio", type='numpy')
             boinhenkan3_bt.click(
-                fn=boinhenkan2,
-                inputs=input_audio,
-                outputs=[phonemes, output_audio]
+                fn=boinhenkan3,
+                inputs=[lang_dropdown, input_audio, sid, vcid, pitch, f0method, speed],
+                outputs=[text, phonemes, output_audio]
             )
-            
-            transcribe_audio_bt.click(
-                fn=transcribe_audio,  # 処理関数を指定
-                inputs=input_audio,  # マイクを音声入力ソースとして指定
-                outputs=text2  # 出力形式をテキストに指定
-            )
-
             boinhenkan2_bt.click(
                 fn=boinhenkan2,
                 inputs=[lang_dropdown, text, sid, vcid, pitch, f0method, speed],
                 outputs=[phonemes, output_audio]
             )
-            acc2speech_bt.click(#アクセントから
+            acc2speech_bt.click(
                 fn=acc2speech,
                 inputs=[lang_dropdown, phonemes, sid, vcid, pitch, f0method, speed],
                 outputs=[output_audio]
