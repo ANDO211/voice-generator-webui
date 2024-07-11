@@ -7,7 +7,7 @@ class Seafoam(Base):
     def __init__(
         self,
         *,
-        primary_hue: colors.Color | str = colors.emerald,
+        primary_hue: colors.Color | str = colors.blue,
         secondary_hue: colors.Color | str = colors.blue,
         neutral_hue: colors.Color | str = colors.gray,
         spacing_size: sizes.Size | str = sizes.spacing_md,
