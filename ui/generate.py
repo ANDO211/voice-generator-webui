@@ -55,6 +55,59 @@ def acc2speech(lang, text, sid, vcid, pitch, f0method, length_scale):
     return tts_audio
 
 ###########################################################################################################################################################################
+# アクセントを抽出
+def accentgenerate(lang, text, sid, vcid, pitch, f0method, length_scale):
+    phonemes, tts_audio = tts_interface.generate_speech(model, lang, text, speaker_list.index(sid), False, length_scale)
+    return phonemes
+
+# アクセントから音声を生成
+def accent2speech(lang, text, sid, vcid, pitch, f0method, length_scale):
+    _, tts_audio = tts_interface.generate_speech(model, lang, text, speaker_list.index(sid), True, length_scale)
+    return tts_audio
+
+###########################################################################################################################################################################
+# 子音変換ルール
+def swap_chars2(phonemes):
+    result = ''
+    for char in phonemes:
+        if char == 'k':
+            result += 'g'
+        elif char == 'g':
+            result += 'k'
+        elif char == 'sh':
+            result += 'zh'
+        elif char == 'zh':
+            result += 'sh'
+        elif char == 's':
+            result += 'z'
+        elif char == 'z':
+            result += 's'
+        elif char == 't':
+            result += 'd'
+        elif char == 'd':
+            result += 't'
+        elif char == 'h':
+            result += 'b'
+        elif char == 'b':
+            result += 'h'
+        elif char == 'n':
+            result += 'm'
+        elif char == 'm':
+            result += 'n'
+        else:
+            result += char
+    return result
+
+###########################################################################################################################################################################
+# 子音変換+文字起こし最終コード
+def siinhenkan3(lang, filepath, sid, vcid, pitch, f0method, length_scale):
+    text = transcribe_audio(filepath)
+    phonemes = accentgenerate(lang, text, sid, vcid, pitch, f0method, length_scale)
+    henkan_phonemes = swap_chars2(phonemes)
+    tts_audio1 = accent2speech(lang, henkan_phonemes, sid, vcid, pitch, f0method, length_scale)
+    return text, henkan_phonemes, tts_audio1
+
+###########################################################################################################################################################################
 # 母音変換ルール
 def swap_chars(phonemes):
     result = ''
@@ -70,16 +123,15 @@ def swap_chars(phonemes):
         else:
             result += char
     return result
-
-# アクセントを抽出
-def accentgenerate(lang, text, sid, vcid, pitch, f0method, length_scale):
-    phonemes, tts_audio = tts_interface.generate_speech(model, lang, text, speaker_list.index(sid), False, length_scale)
-    return phonemes
-
-# アクセントから音声を生成
-def accent2speech(lang, text, sid, vcid, pitch, f0method, length_scale):
-    _, tts_audio = tts_interface.generate_speech(model, lang, text, speaker_list.index(sid), True, length_scale)
-    return tts_audio
+    
+###########################################################################################################################################################################
+# 母音変換+文字起こし最終コード
+def boinhenkan3(lang, filepath, sid, vcid, pitch, f0method, length_scale):
+    text = transcribe_audio(filepath)
+    phonemes = accentgenerate(lang, text, sid, vcid, pitch, f0method, length_scale)
+    henkan_phonemes = swap_chars(phonemes)
+    tts_audio1 = accent2speech(lang, henkan_phonemes, sid, vcid, pitch, f0method, length_scale)
+    return text, henkan_phonemes, tts_audio1
 
 ###########################################################################################################################################################################
 # Whisperモデルのロード
@@ -108,17 +160,6 @@ def transcribe_audio(filepath):
 ###########################################################################################################################################################################
 
 
-###########################################################################################################################################################################
-# 母音変換+文字起こし最終コード
-def boinhenkan3(lang, filepath, sid, vcid, pitch, f0method, length_scale):
-    text = transcribe_audio(filepath)
-    phonemes = accentgenerate(lang, text, sid, vcid, pitch, f0method, length_scale)
-    henkan_phonemes = swap_chars(phonemes)
-    tts_audio1 = accent2speech(lang, henkan_phonemes, sid, vcid, pitch, f0method, length_scale)
-    return text, henkan_phonemes, tts_audio1
-
-###########################################################################################################################################################################
-
 def save_preset(preset_name, lang_dropdown, sid, vcid, pitch, f0method, speed):
     path = 'ui/speaker_presets.json'
     with open(path, "r", encoding="utf-8") as file:
@@ -141,7 +182,9 @@ def ui():
         with gr.Row():
             with gr.Column(scale=3):
                 input_audio = gr.Audio(source="microphone", type="filepath", label="録音開始")
-                boinhenkan3_bt = gr.Button("Generate", variant="primary")
+                boinhenkan3_bt = gr.Button("Generate-母音変換", variant="primary")
+                siinhenkan3_bt = gr.Button("Generate-子音変換", variant="primary")
+
                 
                 text = gr.Textbox(label="Text", lines=4)
 
@@ -176,6 +219,11 @@ def ui():
             output_audio = gr.Audio(label="Output Audio", type='numpy')
             boinhenkan3_bt.click(
                 fn=boinhenkan3,
+                inputs=[lang_dropdown, input_audio, sid, vcid, pitch, f0method, speed],
+                outputs=[text, phonemes, output_audio]
+            )
+            siinhenkan3_bt.click(
+                fn=siinhenkan3,
                 inputs=[lang_dropdown, input_audio, sid, vcid, pitch, f0method, speed],
                 outputs=[text, phonemes, output_audio]
             )
