@@ -68,35 +68,38 @@ def accent2speech(lang, text, sid, vcid, pitch, f0method, length_scale):
 ###########################################################################################################################################################################
 # 子音変換ルール
 def swap_chars2(phonemes):
+    # 定義された置換を辞書として保存
+    replacements = {
+        'k': 'g', 'g': 'k',
+        'sh': 'zh', 'zh': 'sh',
+        's': 'z', 'z': 's',
+        't': 'd', 'd': 't',
+        'h': 'b', 'b': 'h',
+        'n': 'm', 'm': 'n'
+    }
+
+    # 2文字の置換をチェックするための特別な置換リスト
+    two_char_replacements = {
+        'sh': 'zh', 'zh': 'sh'
+    }
+
     result = ''
-    for char in phonemes:
-        if char == 'k':
-            result += 'g'
-        elif char == 'g':
-            result += 'k'
-        elif char == 'sh':
-            result += 'zh'
-        elif char == 'zh':
-            result += 'sh'
-        elif char == 's':
-            result += 'z'
-        elif char == 'z':
-            result += 's'
-        elif char == 't':
-            result += 'd'
-        elif char == 'd':
-            result += 't'
-        elif char == 'h':
-            result += 'b'
-        elif char == 'b':
-            result += 'h'
-        elif char == 'n':
-            result += 'm'
-        elif char == 'm':
-            result += 'n'
+    i = 0
+    while i < len(phonemes):
+        if i + 1 < len(phonemes) and phonemes[i:i+2] in two_char_replacements:
+            # 2文字の置換を確認
+            result += two_char_replacements[phonemes[i:i+2]]
+            i += 2
+        elif phonemes[i] in replacements:
+            # 1文字の置換を確認
+            result += replacements[phonemes[i]]
+            i += 1
         else:
-            result += char
+            result += phonemes[i]
+            i += 1
+
     return result
+
 
 ###########################################################################################################################################################################
 # 子音変換+文字起こし最終コード
