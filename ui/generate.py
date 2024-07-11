@@ -81,14 +81,6 @@ def accent2speech(lang, text, sid, vcid, pitch, f0method, length_scale):
     _, tts_audio = tts_interface.generate_speech(model, lang, text, speaker_list.index(sid), True, length_scale)
     return tts_audio
 
-def boinhenkan(lang, text, sid, vcid, pitch, f0method, length_scale):
-    input_audio = gr.Audio(source="microphone", type="filepath", label="録音開始")
-    text = transcribe_audio(input_audio)
-    phonemes = accentgenerate(lang, text, sid, vcid, pitch, f0method, length_scale)
-    henkan_phonemes = swap_chars(phonemes)
-    tts_audio1 = accent2speech(lang, henkan_phonemes, sid, vcid, pitch, f0method, length_scale)
-    return henkan_phonemes, tts_audio1
-
 ###########################################################################################################################################################################
 # Whisperモデルのロード
 whisper_model = whisper.load_model("base")
@@ -114,12 +106,7 @@ def transcribe_audio(filepath):
         return str(e)
 
 ###########################################################################################################################################################################
-# 母音変換のみ最終コード
-def boinhenkan2(lang, text, sid, vcid, pitch, f0method, length_scale):
-    phonemes = accentgenerate(lang, text, sid, vcid, pitch, f0method, length_scale)
-    henkan_phonemes = swap_chars(phonemes)
-    tts_audio1 = accent2speech(lang, henkan_phonemes, sid, vcid, pitch, f0method, length_scale)
-    return henkan_phonemes, tts_audio1
+
 
 ###########################################################################################################################################################################
 # 母音変換+文字起こし最終コード
@@ -156,11 +143,9 @@ def ui():
                 input_audio = gr.Audio(source="microphone", type="filepath", label="録音開始")
                 boinhenkan3_bt = gr.Button("Generate", variant="primary")
                 
-                text = gr.Textbox(label="Text", value="こんにちは、世界", lines=8)
-                boinhenkan2_bt = gr.Button("Generate From Text", variant="primary")
+                text = gr.Textbox(label="Text", lines=4)
 
-                phonemes = gr.Textbox(label="Phones", interactive=True, lines=8)
-                acc2speech_bt = gr.Button("Generate From Phones", variant="primary")
+                phonemes = gr.Textbox(label="Phones", interactive=True, lines=4)
 
             with gr.Column():
                 lang_dropdown = gr.Dropdown(choices=list(lang_dic.keys()), label="Languages")
@@ -193,14 +178,4 @@ def ui():
                 fn=boinhenkan3,
                 inputs=[lang_dropdown, input_audio, sid, vcid, pitch, f0method, speed],
                 outputs=[text, phonemes, output_audio]
-            )
-            boinhenkan2_bt.click(
-                fn=boinhenkan2,
-                inputs=[lang_dropdown, text, sid, vcid, pitch, f0method, speed],
-                outputs=[phonemes, output_audio]
-            )
-            acc2speech_bt.click(
-                fn=acc2speech,
-                inputs=[lang_dropdown, phonemes, sid, vcid, pitch, f0method, speed],
-                outputs=[output_audio]
             )
