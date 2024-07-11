@@ -90,6 +90,10 @@ def swap_chars2(phonemes):
             # 2文字の置換を確認
             result += two_char_replacements[phonemes[i:i+2]]
             i += 2
+        elif i + 1 < len(phonemes) and phonemes[i:i+2] == 'ch':
+            # 'ch'の特別な処理
+            result += 'ch'
+            i += 2
         elif phonemes[i] in replacements:
             # 1文字の置換を確認
             result += replacements[phonemes[i]]
@@ -99,6 +103,7 @@ def swap_chars2(phonemes):
             i += 1
 
     return result
+
 
 
 ###########################################################################################################################################################################
