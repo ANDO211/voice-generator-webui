@@ -10,9 +10,6 @@ iscolab = parser.parse_args().colab
 with gr.Blocks(themes.Seafoam()) as app:
     with gr.Tabs():
         generate.ui()
-        with_llm.ui()
-        vc_batch.ui()
-        settings.ui()
 
 
 if iscolab:
