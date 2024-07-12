@@ -10,6 +10,7 @@ import json
 # Whisper用
 import whisper
 import shutil
+import random
 ###########################################################################################################################################################################
 
 # load vits model names
@@ -66,8 +67,8 @@ def accent2speech(lang, text, sid, vcid, pitch, f0method, length_scale):
     return tts_audio
 
 ###########################################################################################################################################################################
-# 子音変換ルール
-def swap_chars2(phonemes):
+# 子音変換(法則あり)ルール
+def swap_chars1(phonemes):
     # 定義された置換を辞書として保存
     replacements = {
         'k': 'g', 'g': 'k',
@@ -106,17 +107,19 @@ def swap_chars2(phonemes):
 
 
 ###########################################################################################################################################################################
-# 子音変換+文字起こし最終コード
+# 子音変換(法則あり)+文字起こし最終コード
 def siinhenkan1(lang, filepath, sid, vcid, pitch, f0method, length_scale):
     text = transcribe_audio(filepath)
     phonemes = accentgenerate(lang, text, sid, vcid, pitch, f0method, length_scale)
-    henkan_phonemes = swap_chars2(phonemes)
+    henkan_phonemes = swap_chars1(phonemes)
     tts_audio1 = accent2speech(lang, henkan_phonemes, sid, vcid, pitch, f0method, length_scale)
     return text, henkan_phonemes, tts_audio1
 
+
 ###########################################################################################################################################################################
-# 母音変換ルール
-def swap_chars(phonemes):
+###########################################################################################################################################################################
+# 母音変換（法則あり）ルール
+def swap_chars2(phonemes):
     result = ''
     for char in phonemes:
         if char == 'i':
@@ -132,14 +135,100 @@ def swap_chars(phonemes):
     return result
     
 ###########################################################################################################################################################################
-# 母音変換+文字起こし最終コード
+# 母音変換(法則あり)+文字起こし最終コード
 def boinhenkan1(lang, filepath, sid, vcid, pitch, f0method, length_scale):
     text = transcribe_audio(filepath)
     phonemes = accentgenerate(lang, text, sid, vcid, pitch, f0method, length_scale)
-    henkan_phonemes = swap_chars(phonemes)
+    henkan_phonemes = swap_chars2(phonemes)
     tts_audio1 = accent2speech(lang, henkan_phonemes, sid, vcid, pitch, f0method, length_scale)
     return text, henkan_phonemes, tts_audio1
 
+
+###########################################################################################################################################################################
+###########################################################################################################################################################################
+# 子音変換（法則なし）ルール
+def swap_chars3(phonemes):
+    # 元の子音リスト
+    consonants = ['k', 'g', 'sh', 'j', 's', 'z', 't', 'd', 'ts', 'ch', 'dy', 'h', 'b', 'f', 'v', 'n', 'm']
+    
+    # ランダムな子音リストを生成
+    shuffled_consonants = consonants[:]
+    random.shuffle(shuffled_consonants)
+    
+    # 置換辞書を生成
+    replacements = {consonants[i]: shuffled_consonants[i] for i in range(len(consonants))}
+    
+    result = ''
+    i = 0
+    while i < len(phonemes):
+        # 2文字の子音（sh, chなど）をチェック
+        if i + 1 < len(phonemes) and phonemes[i:i+2] in replacements:
+            result += replacements[phonemes[i:i+2]]
+            i += 2
+        # 1文字の子音をチェック
+        elif phonemes[i] in replacements:
+            result += replacements[phonemes[i]]
+            i += 1
+        else:
+            result += phonemes[i]
+            i += 1
+
+    return result
+
+###########################################################################################################################################################################
+# 子音変換(法則なし)+文字起こし最終コード
+def siinhenkan2(lang, filepath, sid, vcid, pitch, f0method, length_scale):
+    text = transcribe_audio(filepath)
+    phonemes = accentgenerate(lang, text, sid, vcid, pitch, f0method, length_scale)
+    henkan_phonemes = swap_chars3(phonemes)
+    tts_audio1 = accent2speech(lang, henkan_phonemes, sid, vcid, pitch, f0method, length_scale)
+    return text, henkan_phonemes, tts_audio1
+
+
+
+###########################################################################################################################################################################
+###########################################################################################################################################################################
+# 母音変換（法則なし）ルール
+def swap_chars4(phonemes):
+    # 元の母音リスト
+    consonants = ['a', 'i', 'u', 'e', 'o']
+    
+    # ランダムな母音リストを生成
+    shuffled_consonants = consonants[:]
+    random.shuffle(shuffled_consonants)
+    
+    # 置換辞書を生成
+    replacements = {consonants[i]: shuffled_consonants[i] for i in range(len(consonants))}
+    
+    result = ''
+    i = 0
+    while i < len(phonemes):
+        # 2文字の母音（sh, chなど）をチェック
+        if i + 1 < len(phonemes) and phonemes[i:i+2] in replacements:
+            result += replacements[phonemes[i:i+2]]
+            i += 2
+        # 1文字の母音をチェック
+        elif phonemes[i] in replacements:
+            result += replacements[phonemes[i]]
+            i += 1
+        else:
+            result += phonemes[i]
+            i += 1
+
+    return result
+    
+###########################################################################################################################################################################
+# 母音変換(法則なし)+文字起こし最終コード
+def boinhenkan2(lang, filepath, sid, vcid, pitch, f0method, length_scale):
+    text = transcribe_audio(filepath)
+    phonemes = accentgenerate(lang, text, sid, vcid, pitch, f0method, length_scale)
+    henkan_phonemes = swap_chars4(phonemes)
+    tts_audio1 = accent2speech(lang, henkan_phonemes, sid, vcid, pitch, f0method, length_scale)
+    return text, henkan_phonemes, tts_audio1
+
+
+
+###########################################################################################################################################################################
 ###########################################################################################################################################################################
 # Whisperモデルのロード
 whisper_model = whisper.load_model("medium")
