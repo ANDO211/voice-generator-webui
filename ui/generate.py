@@ -65,6 +65,8 @@ def accentgenerate(lang, text, sid, vcid, pitch, f0method, length_scale):
 # アクセントから音声を生成
 def accent2speech(lang, text, sid, vcid, pitch, f0method, length_scale):
     _, tts_audio = tts_interface.generate_speech(model, lang, text, speaker_list.index(sid), True, length_scale)
+    if vcid != 'No conversion':
+        return vc_interface.convert_voice(hubert_model, vc, net_g, tts_audio, vcid, pitch, f0method)
     return tts_audio
 
 
