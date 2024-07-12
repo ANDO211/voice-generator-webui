@@ -142,7 +142,7 @@ def boinhenkan1(lang, filepath, sid, vcid, pitch, f0method, length_scale):
 
 ###########################################################################################################################################################################
 # Whisperモデルのロード
-whisper_model = whisper.load_model("base")
+whisper_model = whisper.load_model("medium")
 
 def transcribe_audio(filepath):
     try:
