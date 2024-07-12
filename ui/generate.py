@@ -55,6 +55,7 @@ def vc_change(vcid):
 #        return vc_interface.convert_voice(hubert_model, vc, net_g, tts_audio, vcid, pitch, f0method)
 #    return tts_audio
 
+
 ###########################################################################################################################################################################
 # アクセントを抽出
 def accentgenerate(lang, text, sid, vcid, pitch, f0method, length_scale):
@@ -65,6 +66,7 @@ def accentgenerate(lang, text, sid, vcid, pitch, f0method, length_scale):
 def accent2speech(lang, text, sid, vcid, pitch, f0method, length_scale):
     _, tts_audio = tts_interface.generate_speech(model, lang, text, speaker_list.index(sid), True, length_scale)
     return tts_audio
+
 
 ###########################################################################################################################################################################
 # 子音変換(法則あり)ルール
@@ -105,8 +107,6 @@ def swap_chars1(phonemes):
     return result
 
 
-
-###########################################################################################################################################################################
 # 子音変換(法則あり)+文字起こし最終コード
 def siinhenkan1(lang, filepath, sid, vcid, pitch, f0method, length_scale):
     text = transcribe_audio(filepath)
@@ -116,7 +116,6 @@ def siinhenkan1(lang, filepath, sid, vcid, pitch, f0method, length_scale):
     return text, henkan_phonemes, tts_audio1
 
 
-###########################################################################################################################################################################
 ###########################################################################################################################################################################
 # 母音変換（法則あり）ルール
 def swap_chars2(phonemes):
@@ -134,7 +133,7 @@ def swap_chars2(phonemes):
             result += char
     return result
     
-###########################################################################################################################################################################
+
 # 母音変換(法則あり)+文字起こし最終コード
 def boinhenkan1(lang, filepath, sid, vcid, pitch, f0method, length_scale):
     text = transcribe_audio(filepath)
@@ -144,7 +143,6 @@ def boinhenkan1(lang, filepath, sid, vcid, pitch, f0method, length_scale):
     return text, henkan_phonemes, tts_audio1
 
 
-###########################################################################################################################################################################
 ###########################################################################################################################################################################
 # 子音変換（法則なし）ルール
 def swap_chars3(phonemes):
@@ -175,7 +173,7 @@ def swap_chars3(phonemes):
 
     return result
 
-###########################################################################################################################################################################
+
 # 子音変換(法則なし)+文字起こし最終コード
 def siinhenkan2(lang, filepath, sid, vcid, pitch, f0method, length_scale):
     text = transcribe_audio(filepath)
@@ -185,8 +183,6 @@ def siinhenkan2(lang, filepath, sid, vcid, pitch, f0method, length_scale):
     return text, henkan_phonemes, tts_audio1
 
 
-
-###########################################################################################################################################################################
 ###########################################################################################################################################################################
 # 母音変換（法則なし）ルール
 def swap_chars4(phonemes):
@@ -217,7 +213,7 @@ def swap_chars4(phonemes):
 
     return result
     
-###########################################################################################################################################################################
+
 # 母音変換(法則なし)+文字起こし最終コード
 def boinhenkan2(lang, filepath, sid, vcid, pitch, f0method, length_scale):
     text = transcribe_audio(filepath)
@@ -227,8 +223,6 @@ def boinhenkan2(lang, filepath, sid, vcid, pitch, f0method, length_scale):
     return text, henkan_phonemes, tts_audio1
 
 
-
-###########################################################################################################################################################################
 ###########################################################################################################################################################################
 # Whisperモデルのロード
 whisper_model = whisper.load_model("medium")
@@ -253,9 +247,8 @@ def transcribe_audio(filepath):
     except Exception as e:
         return str(e)
 
+
 ###########################################################################################################################################################################
-
-
 def save_preset(preset_name, lang_dropdown, sid, vcid, pitch, f0method, speed):
     path = 'ui/speaker_presets.json'
     with open(path, "r", encoding="utf-8") as file:
@@ -280,6 +273,8 @@ def ui():
                 input_audio = gr.Audio(source="microphone", type="filepath", label="録音開始")
                 boinhenkan1_bt = gr.Button("Generate-母音変換(法則あり)", variant="primary")
                 siinhenkan1_bt = gr.Button("Generate-子音変換（法則あり）", variant="primary")
+                boinhenkan2_bt = gr.Button("Generate-母音変換(法則なし)", variant="primary")
+                siinhenkan2_bt = gr.Button("Generate-子音変換（法則なし）", variant="primary")
 
                 
                 text = gr.Textbox(label="Text", lines=4)
@@ -320,6 +315,16 @@ def ui():
             )
             siinhenkan1_bt.click(
                 fn=siinhenkan1,
+                inputs=[lang_dropdown, input_audio, sid, vcid, pitch, f0method, speed],
+                outputs=[text, phonemes, output_audio]
+            )
+            boinhenkan2_bt.click(
+                fn=boinhenkan2,
+                inputs=[lang_dropdown, input_audio, sid, vcid, pitch, f0method, speed],
+                outputs=[text, phonemes, output_audio]
+            )
+            siinhenkan2_bt.click(
+                fn=siinhenkan2,
                 inputs=[lang_dropdown, input_audio, sid, vcid, pitch, f0method, speed],
                 outputs=[text, phonemes, output_audio]
             )
