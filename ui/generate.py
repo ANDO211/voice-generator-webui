@@ -268,14 +268,15 @@ def save_preset(preset_name, lang_dropdown, sid, vcid, pitch, f0method, speed):
     with open(path, "w", encoding="utf-8") as file:
         json.dump(data, file, indent=2, ensure_ascii=False)
 
+
 def ui():
     with gr.TabItem('Generate'):
         with gr.Row():
             with gr.Column(scale=3):
                 input_audio = gr.Audio(source="microphone", type="filepath", label="録音開始")
                 boinhenkan1_bt = gr.Button("Generate-母音変換(法則あり)", variant="primary")
-                siinhenkan1_bt = gr.Button("Generate-子音変換（法則あり）", variant="primary")
                 boinhenkan2_bt = gr.Button("Generate-母音変換(法則なし)", variant="primary")
+                siinhenkan1_bt = gr.Button("Generate-子音変換（法則あり）", variant="primary")
                 siinhenkan2_bt = gr.Button("Generate-子音変換（法則なし）", variant="primary")
 
                 
