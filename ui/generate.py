@@ -274,14 +274,16 @@ def ui():
         with gr.Row():
             with gr.Column(scale=3):
                 input_audio = gr.Audio(source="microphone", type="filepath", label="録音開始")
-                boinhenkan1_bt = gr.Button("Generate-母音変換(法則あり)", variant="primary")
-                boinhenkan2_bt = gr.Button("Generate-母音変換(法則なし)", variant="primary")
-                siinhenkan1_bt = gr.Button("Generate-子音変換（法則あり）", variant="primary")
-                siinhenkan2_bt = gr.Button("Generate-子音変換（法則なし）", variant="primary")
-
                 
-                text = gr.Textbox(label="Text", lines=4)
+                with gr.Row():
+                    with gr.Column():
+                        boinhenkan1_bt = gr.Button("Generate-母音変換(法則あり)", variant="primary")
+                        boinhenkan2_bt = gr.Button("Generate-母音変換(法則なし)", variant="primary")
+                    with gr.Column():
+                        siinhenkan1_bt = gr.Button("Generate-子音変換（法則あり）", variant="primary")
+                        siinhenkan2_bt = gr.Button("Generate-子音変換（法則なし）", variant="primary")
 
+                text = gr.Textbox(label="Text", lines=4)
                 phonemes = gr.Textbox(label="Phones", interactive=True, lines=4)
 
             with gr.Column():
@@ -299,7 +301,7 @@ def ui():
                     fn=vc_change,
                     inputs=[vcid]
                 )
-                with gr.Accordion("VC Setteings", open=False):
+                with gr.Accordion("VC Settings", open=False):
                     pitch = gr.Slider(minimum=-12, maximum=12, step=1, label='Pitch', value=0)
                     f0method = gr.Radio(label="Pitch Method", choices=["pm", "harvest"], value="pm")
 
