@@ -71,16 +71,19 @@ def swap_chars2(phonemes):
     # 定義された置換を辞書として保存
     replacements = {
         'k': 'g', 'g': 'k',
-        'sh': 'zh', 'zh': 'sh',
+        'sh': 'j', 'j': 'sh',
         's': 'z', 'z': 's',
         't': 'd', 'd': 't',
+        'ts': 'd',
+        'ch': 'dy', 'dy': 'ch',    
         'h': 'b', 'b': 'h',
-        'n': 'm', 'm': 'n'
+        'f': 'v', 'v': 'f',
+        'n': 'm', 'm': 'n',
     }
 
     # 2文字の置換をチェックするための特別な置換リスト
     two_char_replacements = {
-        'sh': 'zh', 'zh': 'sh'
+        'sh': 'j', 'j': 'sh', 'ch': 'dy', 'dy': 'ch', 'ts': 'd',
     }
 
     result = ''
@@ -89,10 +92,6 @@ def swap_chars2(phonemes):
         if i + 1 < len(phonemes) and phonemes[i:i+2] in two_char_replacements:
             # 2文字の置換を確認
             result += two_char_replacements[phonemes[i:i+2]]
-            i += 2
-        elif i + 1 < len(phonemes) and phonemes[i:i+2] == 'ch':
-            # 'ch'の特別な処理
-            result += 'ch'
             i += 2
         elif phonemes[i] in replacements:
             # 1文字の置換を確認
