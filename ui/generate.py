@@ -107,7 +107,7 @@ def swap_chars2(phonemes):
 
 ###########################################################################################################################################################################
 # 子音変換+文字起こし最終コード
-def siinhenkan3(lang, filepath, sid, vcid, pitch, f0method, length_scale):
+def siinhenkan1(lang, filepath, sid, vcid, pitch, f0method, length_scale):
     text = transcribe_audio(filepath)
     phonemes = accentgenerate(lang, text, sid, vcid, pitch, f0method, length_scale)
     henkan_phonemes = swap_chars2(phonemes)
@@ -133,7 +133,7 @@ def swap_chars(phonemes):
     
 ###########################################################################################################################################################################
 # 母音変換+文字起こし最終コード
-def boinhenkan3(lang, filepath, sid, vcid, pitch, f0method, length_scale):
+def boinhenkan1(lang, filepath, sid, vcid, pitch, f0method, length_scale):
     text = transcribe_audio(filepath)
     phonemes = accentgenerate(lang, text, sid, vcid, pitch, f0method, length_scale)
     henkan_phonemes = swap_chars(phonemes)
@@ -189,8 +189,8 @@ def ui():
         with gr.Row():
             with gr.Column(scale=3):
                 input_audio = gr.Audio(source="microphone", type="filepath", label="録音開始")
-                boinhenkan3_bt = gr.Button("Generate-母音変換", variant="primary")
-                siinhenkan3_bt = gr.Button("Generate-子音変換", variant="primary")
+                boinhenkan1_bt = gr.Button("Generate-母音変換(法則あり)", variant="primary")
+                siinhenkan1_bt = gr.Button("Generate-子音変換（法則あり）", variant="primary")
 
                 
                 text = gr.Textbox(label="Text", lines=4)
@@ -224,13 +224,13 @@ def ui():
                 )
         with gr.Row():
             output_audio = gr.Audio(label="Output Audio", type='numpy')
-            boinhenkan3_bt.click(
-                fn=boinhenkan3,
+            boinhenkan1_bt.click(
+                fn=boinhenkan1,
                 inputs=[lang_dropdown, input_audio, sid, vcid, pitch, f0method, speed],
                 outputs=[text, phonemes, output_audio]
             )
-            siinhenkan3_bt.click(
-                fn=siinhenkan3,
+            siinhenkan1_bt.click(
+                fn=siinhenkan1,
                 inputs=[lang_dropdown, input_audio, sid, vcid, pitch, f0method, speed],
                 outputs=[text, phonemes, output_audio]
             )
